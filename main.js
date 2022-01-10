@@ -128,6 +128,36 @@ function createBase() { // Baseシートの自動作成
   baseSheet.getRange(totalStartRowNum + tableRowCount, 3, 1, statisticOption.length).setFormulaR1C1(placeStaticFormula); // 要素ごとの最終合計
   baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + '],RC[-1])');
 
+  // ここに出席率と未処理 計を計算
+  let attendsIndex = [];
+  let unattendsIndex = [];
+
+  for (let j = 0; j < attends.length; j++) {
+    let index = statisticOption.findIndex(element => element === attends[j]);
+    if (index === -1) console.error('出席要素が見つかりません');
+    else attendsIndex.push(index + 1);
+  }
+  for (let j = 0; j < unattends.length; j++) {
+    let index = statisticOption.findIndex(element => element === unattends[j]);
+    if (index === -1) console.error('未処理要素が見つかりません');
+    else unattendsIndex.push(index + 1);
+  }
+
+  let attendsFormula = '=(';
+  for (let j = 0; j < attendsIndex.length; j++) {
+    attendsFormula += 'RC[' + (-2 - statisticOption.length + attendsIndex[j]) + ']';
+    if (j + 1 !== attendsIndex.length) attendsFormula += '+';
+  }
+  attendsFormula += ')/RC[-1]';
+  baseSheet.getRange(totalStartRowNum + tableRowCount, statisticOption.length + 4, 1, 1).setFormulaR1C1(attendsFormula);
+
+  let unattendsFormula = '=';
+  for (let j = 0; j < unattendsIndex.length; j++) {
+    unattendsFormula += 'RC[' + (-3 - statisticOption.length + unattendsIndex[j]) + ']';
+    if (j + 1 !== unattendsIndex.length) unattendsFormula += '+';
+  }
+  baseSheet.getRange(totalStartRowNum + tableRowCount, statisticOption.length + 5, 1, 1).setFormulaR1C1(unattendsFormula);
+
   statisticLines.push(tableRowCount + totalStartRowNum);
   tableRowCount++;
 
