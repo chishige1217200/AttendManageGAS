@@ -25,6 +25,7 @@ function setupConfig(sheet) { // Configシートの自動作成
     in_data1.push(i + 1);
   data1.push(in_data1); // 与えるデータは二次元配列
   const data2 = [['実施回'], ['時間帯'], ['場所'], ['班数'], ['統計区別'], ['出席要素'], ['欠席要素'], ['未処理要素']];
+  sheet.getRange(1, 2, 1, 1).setValue('シートを生成すると既存のシートは失われます．').setFontColor('red');
   sheet.getRange(2, 3, 1, max_width).setValues(data1);
   sheet.getRange(3, 2, data2.length, 1).setValues(data2);
 
@@ -49,11 +50,10 @@ function createBase() { // Baseシートの自動作成
     return;
   }
   let baseSheet = ss.getSheetByName('Base');
-  if (baseSheet == null) {
-    baseSheet = ss.insertSheet();
-    baseSheet.setName('Base');
-    baseSheet = ss.getSheetByName('Base');
-  }
+  if (baseSheet !== null) ss.deleteSheet(baseSheet);
+  baseSheet = ss.insertSheet();
+  baseSheet.setName('Base');
+  baseSheet = ss.getSheetByName('Base');
 
   // Configの解析
   let rowNum = 3; // 解析行番
