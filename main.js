@@ -90,8 +90,6 @@ function createBase() { // Baseシートの自動作成
   let totalStartRowNum = 4 + halfSectionCount; // 1番目の表の開始行
   let tableRowCount = 0; // 表の行数カウント
 
-  //for (let i = 0; i < section.length; i++) { // 全部の表のループ
-  let placeStatisticLines = []; // 実施場所の集計行をマーク
   let placeStaticFormula = '=';
 
   let firstLineArray = [section[0]];
@@ -99,7 +97,6 @@ function createBase() { // Baseシートの自動作成
     firstLineArray.push(statisticOption[l]);
   firstLineArray.push('総数');
   firstLineArray = [firstLineArray];
-  //console.log(firstLineArray);
   baseSheet.getRange(totalStartRowNum, 2, 1, firstLineArray[0].length).setValues(firstLineArray);
   tableRowCount++;
 
@@ -130,19 +127,16 @@ function createBase() { // Baseシートの自動作成
   baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + '],RC[-1])');
 
   statisticLines.push(tableRowCount + totalStartRowNum);
-
-
   tableRowCount++;
 
   baseSheet.getRange(totalStartRowNum, 2, tableRowCount, statisticOption.length + 2).setBorder(true, true, true, true, true, true); // 枠線を引く
 
   // 表の複製処理
   for (let i = 1; i < section.length; i++) {
-    baseSheet.getRange(totalStartRowNum, 2, tableRowCount, statisticOption.length + 5).copyTo(baseSheet.getRange(totalStartRowNum + (tableRowCount + 1) * i, 2, tableRowCount, statisticOption.length + 5));
-    baseSheet.getRange(totalStartRowNum + (tableRowCount + 1) * i, 2, 1, 1).setValue(section[i]);
-    statisticLines.push(totalStartRowNum + (tableRowCount + 1) * i + tableRowCount - 1);
+    baseSheet.getRange(totalStartRowNum, 2, tableRowCount, statisticOption.length + 5).copyTo(baseSheet.getRange(totalStartRowNum + (tableRowCount + 2) * i, 2, tableRowCount, statisticOption.length + 5));
+    baseSheet.getRange(totalStartRowNum + (tableRowCount + 2) * i, 2, 1, 1).setValue(section[i]);
+    statisticLines.push(totalStartRowNum + (tableRowCount + 2) * i + tableRowCount - 1);
   }
   console.log(tableRowCount);
   console.log(statisticLines);
 }
-//}
