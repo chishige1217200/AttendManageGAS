@@ -24,7 +24,7 @@ function setupConfig(sheet) { // Configシートの自動作成
   for (let i = 0; i < max_width; i++)
     in_data1.push(i + 1);
   data1.push(in_data1); // 与えるデータは二次元配列
-  const data2 = [['実施回'], ['時間帯'], ['場所'], ['班数'], ['統計区別'], ['出席要素'], ['欠席要素'], ['未処理要素']];
+  const data2 = [['実施回'], ['時間帯'], ['場所'], ['班数'], ['統計区別'], ['出席要素'], ['未処理要素']];
   sheet.getRange(1, 2, 1, 1).setValue('シートを生成すると既存のシートは失われます．').setFontColor('red');
   sheet.getRange(2, 3, 1, max_width).setValues(data1);
   sheet.getRange(3, 2, data2.length, 1).setValues(data2);
@@ -64,7 +64,6 @@ function createBase() { // Baseシートの自動作成
   let data5 = configSheet.getRange(rowNum++, 3, 1, max_width).getValues();
   let data6 = configSheet.getRange(rowNum++, 3, 1, max_width).getValues();
   let data7 = configSheet.getRange(rowNum++, 3, 1, max_width).getValues();
-  let data8 = configSheet.getRange(rowNum++, 3, 1, max_width).getValues();
   let part = data1[0].filter(word => word != ''); // 実施回（ex: 1st）
   if (part.length <= 0) console.error('実施回は1回以上ある必要があります．');
   let section = data2[0].filter(word => word != ''); // 曜日時間帯（ex: 月曜前半）
@@ -81,16 +80,17 @@ function createBase() { // Baseシートの自動作成
   // 出席周りは例外処理がないため，入力に注意
   let statisticOption = data5[0].filter(word => word != ''); // 集計区分要素
   let attends = data6[0].filter(word => word != ''); // 出席と記録する要素
-  let absents = data7[0].filter(word => word != ''); // 欠席とする要素
-  let unattends = data8[0].filter(word => word != ''); // 未処理とする要素
+  let unattends = data7[0].filter(word => word != ''); // 未処理とする要素
 
   // Baseの作成
   let statisticLines = []; //各実施時間帯の集計行をマーク
   let halfSectionCount = Math.ceil(section.length / 2); // 開始行の推定用（切り上げ）
+  console.log(halfSectionCount);
+
   let totalStartRowNum = 4 + halfSectionCount; // 1番目の表の開始行
   let tableRowCount = 0; // 表の行数カウント
 
-  let placeStaticFormula = '=';
+  let placeStatisticFormula = '=';
 
   let firstLineArray = [section[0]];
   for (let l = 0; l < statisticOption.length; l++)
@@ -122,10 +122,10 @@ function createBase() { // Baseシートの自動作成
     if (j === place.length - 1) back = -1;
     else
       back = -backSum(groupCount, j + 1) - (place.length - j);
-    placeStaticFormula += 'R[' + back + ']C';
-    if (j !== 0) placeStaticFormula += '+';
+    placeStatisticFormula += 'R[' + back + ']C';
+    if (j !== 0) placeStatisticFormula += '+';
   }
-  baseSheet.getRange(totalStartRowNum + tableRowCount, 3, 1, statisticOption.length).setFormulaR1C1(placeStaticFormula); // 要素ごとの最終合計
+  baseSheet.getRange(totalStartRowNum + tableRowCount, 3, 1, statisticOption.length).setFormulaR1C1(placeStatisticFormula); // 要素ごとの最終合計
   baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + '],RC[-1])');
 
   // ここに出席率と未処理 計を計算
@@ -171,4 +171,36 @@ function createBase() { // Baseシートの自動作成
   }
   console.log(tableRowCount);
   console.log(statisticLines);
+
+  // 上部の集計部を生成
+  let baseColumn = 1;
+  let rowCount = 0;
+  baseSheet.getRange(2, baseColumn + 1, 1, 2).setValues([['出席率', '未処理']]);
+  for (let i = 0; i < section.length; i++) {
+    baseSheet.getRange(rowCount + 3, baseColumn, 1, 1).setValue(section[i]);
+    baseSheet.getRange(rowCount + 3, baseColumn + 1, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 4));
+    baseSheet.getRange(rowCount + 3, baseColumn + 2, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 5));
+    // 代入処理
+    rowCount++;
+    if (i + 1 === halfSectionCount) {
+      baseColumn += 4;
+      rowCount = 0;
+      baseSheet.getRange(2, baseColumn + 1, 1, 2).setValues([['出席率', '未処理']]);
+    }
+  }
+
+  baseColumn += 4;
+  baseSheet.getRange(1, baseColumn, 1, 1).setValue('計');
+  baseSheet.getRange(2, baseColumn, 1, statisticOption.length).setValues([statisticOption]).setHorizontalAlignment('center');
+  baseSheet.getRange(2, baseColumn + statisticOption.length, 1, 1).setValue('総数').setHorizontalAlignment('center');
+
+  for (let i = 0; i < statisticOption.length; i++) {
+    let allStatisticFormula = '=';
+    for (let j = 0; j < statisticLines.length; j++) {
+      allStatisticFormula += 'R' + statisticLines[j] + 'C' + (i + 3);
+      if (j + 1 !== statisticLines.length) allStatisticFormula += '+';
+    }
+    baseSheet.getRange(3, baseColumn + i, 1, 1).setFormulaR1C1(allStatisticFormula);
+  }
+  baseSheet.getRange(3, baseColumn + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + ']:RC[-1])');
 }
