@@ -96,25 +96,27 @@ function createBase() { // Baseシートの自動作成
   for (let l = 0; l < statisticOption.length; l++)
     firstLineArray.push(statisticOption[l]);
   firstLineArray.push('総数');
+  firstLineArray.push('出席率');
+  firstLineArray.push('未処理　計');
   firstLineArray = [firstLineArray];
-  baseSheet.getRange(totalStartRowNum, 2, 1, firstLineArray[0].length).setValues(firstLineArray);
+  baseSheet.getRange(totalStartRowNum, 2, 1, firstLineArray[0].length).setValues(firstLineArray).setHorizontalAlignment('center');
   tableRowCount++;
 
   for (let j = 0; j < place.length; j++) { // 実施場所毎のループ（1つの表）
     baseSheet.getRange(totalStartRowNum + tableRowCount, 3, groupCount[j], statisticOption.length).setBackground('aqua'); // 色をつける
     for (let k = 0; k < groupCount[j]; k++) { // 実施場所入力行生成部
-      baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue(place[j] + (k + 1) + '班');
+      baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue(place[j] + (k + 1) + '班').setHorizontalAlignment('center');
       baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + '],RC[-1])');
       tableRowCount++;
     }
-    baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue(place[j] + '合計'); // 実施場所毎合計部
+    baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue(place[j] + '合計').setHorizontalAlignment('center'); // 実施場所毎合計部
     baseSheet.getRange(totalStartRowNum + tableRowCount, 3, 1, statisticOption.length).setFormulaR1C1('=SUM(R[' + (-groupCount[j]) + ']C,R[-1]C)');
     baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + '],RC[-1])');
     tableRowCount++;
   }
 
   // 合計計算（相対仕様に変更）
-  baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue('合計').setFontColor('red');
+  baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue('合計').setFontColor('red').setHorizontalAlignment('center');
   for (let j = place.length - 1; j >= 0; j--) {
     let back = 0;
     if (j === place.length - 1) back = -1;
