@@ -33,7 +33,7 @@ function setupConfig(sheet) { // Configシートの自動作成
 
 function backSum(num, flag) {
   let sum = 0;
-  for (let i = flag; i >= 0; i--)
+  for (let i = num.length - 1; i >= flag; i--)
     sum += num[i];
   return sum;
 }
@@ -106,7 +106,7 @@ function createBase() { // Baseシートの自動作成
   for (let j = 0; j < place.length; j++) { // 実施場所毎のループ（1つの表）
     baseSheet.getRange(totalStartRowNum + tableRowCount, 3, groupCount[j], statisticOption.length).setBackground('aqua'); // 色をつける
     for (let k = 0; k < groupCount[j]; k++) { // 実施場所入力行生成部
-      baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue(k + 1 + '班');
+      baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue(place[j] + (k + 1) + '班');
       baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + '],RC[-1])');
       tableRowCount++;
     }
@@ -117,31 +117,32 @@ function createBase() { // Baseシートの自動作成
   }
 
   // 合計計算（相対仕様に変更）
-  /*baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue('合計').setFontColor('red');
-  for (let j = place.length - 1; place.length >= 0; j--) {
-    let back = -backSum(groupCount, j) - (place.length + 1 - j);
+  baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue('合計').setFontColor('red');
+  for (let j = place.length - 1; j >= 0; j--) {
+    let back = 0;
+    if (j === place.length - 1) back = -1;
+    else
+      back = -backSum(groupCount, j + 1) - (place.length - j);
     placeStaticFormula += 'R[' + back + ']C';
     if (j !== 0) placeStaticFormula += '+';
   }
   baseSheet.getRange(totalStartRowNum + tableRowCount, 3, 1, statisticOption.length).setFormulaR1C1(placeStaticFormula); // 要素ごとの最終合計
-  baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + '],RC[-1])');*/
-
-  /*let groupCountSum = groupCount.length;
-  for (let j = 0; j < groupCount.length; j++)
-    groupCountSum += groupCount[i];
-  baseSheet.getRange(totalStartRowNum, 2, groupCountSum + 2, statisticOption.length + 2).setBorder(true, true, true, true, true, true);*/
+  baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + '],RC[-1])');
 
   statisticLines.push(tableRowCount + totalStartRowNum);
-  console.log(statisticLines++);
-  console.log(++tableRowCount);
 
-  baseSheet.getRange(totalStartRowNum, 2, tableRowCount, statisticOption.length + 2).setBorder(true, true, true, true, true, true);
 
-  // 複製処理
+  tableRowCount++;
+
+  baseSheet.getRange(totalStartRowNum, 2, tableRowCount, statisticOption.length + 2).setBorder(true, true, true, true, true, true); // 枠線を引く
+
+  // 表の複製処理
   for (let i = 1; i < section.length; i++) {
-    baseSheet.getRange(totalStartRowNum, 2, tableRowCount + 1, statisticOption.length + 5).copyTo(baseSheet.getRange(totalStartRowNum + (tableRowCount + 1) * i, 2, tableRowCount, statisticOption.length + 5));
+    baseSheet.getRange(totalStartRowNum, 2, tableRowCount, statisticOption.length + 5).copyTo(baseSheet.getRange(totalStartRowNum + (tableRowCount + 1) * i, 2, tableRowCount, statisticOption.length + 5));
     baseSheet.getRange(totalStartRowNum + (tableRowCount + 1) * i, 2, 1, 1).setValue(section[i]);
+    statisticLines.push(totalStartRowNum + (tableRowCount + 1) * i + tableRowCount - 1);
   }
-
+  console.log(tableRowCount);
+  console.log(statisticLines);
 }
 //}
