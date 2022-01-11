@@ -8,38 +8,29 @@ function setup() { // 初期設定
     configSheet.setName('Config');
     //configSheet = ss.getSheetByName('Config');
   }
-  let baseSheet = ss.getSheetByName('Base');
-  if (baseSheet === null) {
-    baseSheet = ss.insertSheet();
-    baseSheet.setName('Base');
-    //baseSheet = ss.getSheetByName('Base');
-  }
 
-  setupConfig(configSheet);
-}
-
-function setupConfig(sheet) { // Configシートの自動作成
+  // Configシート作成
   let data1 = [];
   let in_data1 = [];
   for (let i = 0; i < max_width; i++)
     in_data1.push(i + 1);
   data1.push(in_data1); // 与えるデータは二次元配列
   const data2 = [['実施回'], ['時間帯'], ['場所'], ['班数'], ['統計区別'], ['出席要素'], ['未処理要素']];
-  sheet.getRange(1, 2, 1, 1).setValue('シートを生成すると既存のシートは失われます．').setFontColor('red');
-  sheet.getRange(2, 3, 1, max_width).setValues(data1);
-  sheet.getRange(3, 2, data2.length, 1).setValues(data2);
+  configSheet.getRange(1, 2, 1, 1).setValue('シートを生成すると既存のシートは失われます．').setFontColor('red');
+  configSheet.getRange(2, 3, 1, max_width).setValues(data1);
+  configSheet.getRange(3, 2, data2.length, 1).setValues(data2);
 
   console.log('Configを記入してください．');
 }
 
-function backSum(num, flag) {
-  let sum = 0;
-  for (let i = num.length - 1; i >= flag; i--)
-    sum += num[i];
-  return sum;
-}
+function createBase() { // 集計シートの自動作成
+  function backSum(num, flag) { // 全体合計処理に使用
+    let sum = 0;
+    for (let i = num.length - 1; i >= flag; i--)
+      sum += num[i];
+    return sum;
+  }
 
-function createBase() { // Baseシートの自動作成
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let configSheet = ss.getSheetByName('Config');
   if (configSheet === null) {
