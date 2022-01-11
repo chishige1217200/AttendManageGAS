@@ -68,8 +68,11 @@ function createStatisticSheet() { // 集計シートの自動作成
 
   // 出席周りは例外処理がないため，入力に注意
   let statisticOption = data5[0].filter(word => word != ''); // 集計区分要素
+  if (statisticOption.length === 0) console.error('統計区別に1つ以上の統計要素を指定してください．');
   let attends = data6[0].filter(word => word != ''); // 出席と記録する要素
+  if (attends.length === 0) console.error('出席要素に1つ以上の統計要素を指定してください．');
   let unattends = data7[0].filter(word => word != ''); // 未処理とする要素
+  if (unattends.length === 0) console.error('未処理要素に1つ以上の統計要素を指定してください．');
 
   // Baseの作成
   baseSheet.getRange(1, 1, 1, 1).setValue('これは基準シートです．このシートが複製されます．');
@@ -235,6 +238,4 @@ function createStatisticSheet() { // 集計シートの自動作成
       }
     }
   }
-
-
 }
