@@ -99,12 +99,12 @@ function createStatisticSheet() { // 集計シートの自動作成
     baseSheet.getRange(totalStartRowNum + tableRowCount, 3, groupCount[j], statisticOption.length).setBackground('aqua'); // 色をつける
     for (let k = 0; k < groupCount[j]; k++) { // 実施場所入力行生成部
       baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue(place[j] + (k + 1) + '班').setHorizontalAlignment('center');
-      baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + '],RC[-1])');
+      baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + ']:RC[-1])');
       tableRowCount++;
     }
     baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue(place[j] + '合計').setHorizontalAlignment('center'); // 実施場所毎合計部
-    baseSheet.getRange(totalStartRowNum + tableRowCount, 3, 1, statisticOption.length).setFormulaR1C1('=SUM(R[' + (-groupCount[j]) + ']C,R[-1]C)');
-    baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + '],RC[-1])');
+    baseSheet.getRange(totalStartRowNum + tableRowCount, 3, 1, statisticOption.length).setFormulaR1C1('=SUM(R[' + (-groupCount[j]) + ']C:R[-1]C)');
+    baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + ']:RC[-1])');
     tableRowCount++;
   }
 
@@ -119,7 +119,7 @@ function createStatisticSheet() { // 集計シートの自動作成
     if (j !== 0) placeStatisticFormula += '+';
   }
   baseSheet.getRange(totalStartRowNum + tableRowCount, 3, 1, statisticOption.length).setFormulaR1C1(placeStatisticFormula); // 要素ごとの最終合計
-  baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + '],RC[-1])');
+  baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + ']:RC[-1])');
 
   // ここに出席率と未処理 計を計算
   let attendsIndex = [];
@@ -142,7 +142,7 @@ function createStatisticSheet() { // 集計シートの自動作成
     if (j + 1 !== attendsIndex.length) attendsFormula += '+';
   }
   attendsFormula += ')/RC[-1]';
-  baseSheet.getRange(totalStartRowNum + tableRowCount, statisticOption.length + 4, 1, 1).setFormulaR1C1(attendsFormula);
+  baseSheet.getRange(totalStartRowNum + tableRowCount, statisticOption.length + 4, 1, 1).setFormulaR1C1(attendsFormula).setNumberFormat("0%");
 
   let unattendsFormula = '=';
   for (let j = 0; j < unattendsIndex.length; j++) {
@@ -171,7 +171,7 @@ function createStatisticSheet() { // 集計シートの自動作成
   baseSheet.getRange(2, baseColumn + 1, 1, 2).setValues([['出席率', '未処理']]);
   for (let i = 0; i < section.length; i++) {
     baseSheet.getRange(rowCount + 3, baseColumn, 1, 1).setValue(section[i]);
-    baseSheet.getRange(rowCount + 3, baseColumn + 1, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 4));
+    baseSheet.getRange(rowCount + 3, baseColumn + 1, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 4)).setNumberFormat("0%");
     baseSheet.getRange(rowCount + 3, baseColumn + 2, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 5));
     // 代入処理
     rowCount++;
@@ -230,7 +230,7 @@ function createStatisticSheet() { // 集計シートの自動作成
     // 1行ずつ処理
     for (let j = 0; j < section.length; j++) // 実施時間帯
     {
-      statisticSheet.getRange(j + 2, i + 2, 1, 1).setFormulaR1C1('=\'' + part[i] + '\'!R' + (rowCount + 3) + 'C' + baseColumn);
+      statisticSheet.getRange(j + 2, i + 2, 1, 1).setFormulaR1C1('=\'' + part[i] + '\'!R' + (rowCount + 3) + 'C' + baseColumn).setNumberFormat("0%");
       rowCount++;
       if (j + 1 === halfSectionCount) {
         baseColumn += 4;
@@ -240,7 +240,7 @@ function createStatisticSheet() { // 集計シートの自動作成
   }
 
   // グラフ描画
-  let graphRange = statisticSheet.getRange(2, 2, section.length, part.length);
-  let graph = statisticSheet.newChart().addRange(graphRange).setChartType(Charts.ChartType.LINE).setPosition(section.length + 3, 1, 0, 0);
+  let graphRange = statisticSheet.getRange(1, 1, section.length + 1, part.length + 1);
+  let graph = statisticSheet.newChart().addRange(graphRange).setChartType(Charts.ChartType.LINE).setPosition(section.length + 3, 1, 0, 0).setNumHeaders(1).setOption('title', '出席率集計');
   statisticSheet.insertChart(graph.build());
 }
