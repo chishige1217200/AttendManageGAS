@@ -6,7 +6,6 @@ function setup() { // 初期設定
   if (configSheet === null) {
     configSheet = ss.insertSheet();
     configSheet.setName('Config');
-    //configSheet = ss.getSheetByName('Config');
   }
 
   // Configシート作成
@@ -23,7 +22,7 @@ function setup() { // 初期設定
   console.log('Configを記入してください．');
 }
 
-function createBase() { // 集計シートの自動作成
+function createStatisticSheet() { // 集計シートの自動作成
   function backSum(num, flag) { // 全体合計処理に使用
     let sum = 0;
     for (let i = num.length - 1; i >= flag; i--)
@@ -36,7 +35,6 @@ function createBase() { // 集計シートの自動作成
   if (configSheet === null) {
     configSheet = ss.insertSheet();
     configSheet.setName('Config');
-    //configSheet = ss.getSheetByName('Config');
     setupConfig(configSheet);
     return;
   }
@@ -44,7 +42,6 @@ function createBase() { // 集計シートの自動作成
   if (baseSheet !== null) ss.deleteSheet(baseSheet);
   baseSheet = ss.insertSheet();
   baseSheet.setName('Base');
-  //baseSheet = ss.getSheetByName('Base');
 
   // Configの解析
   let rowNum = 3; // 解析行番
@@ -204,8 +201,37 @@ function createBase() { // 集計シートの自動作成
     if (finalSheet !== null) ss.deleteSheet(finalSheet);
     finalSheet = baseSheet.copyTo(ss);
     finalSheet.setName(part[i]);
-    //finalSheet = ss.getSheetByName('Base');
     finalSheet.getRange(1, 1, 1, 1).setValue(part[i]);
     completedsheet.push(finalSheet);
+  }
+
+  // 全体集計シートの作成
+  let statisticSheet = ss.getSheetByName('出席率集計');
+  if (statisticSheet !== null) ss.deleteSheet(statisticSheet);
+  statisticSheet = ss.insertSheet('出席率集計');
+
+  let sectionCol = [];
+  for (let i = 0; i < section.length; i++) {
+    sectionCol.push([section[i]]);
+  }
+
+  // 見出し行生成
+  statisticSheet.getRange(2, 1, sectionCol.length, 1).setValues(sectionCol);
+  statisticSheet.getRange(1, 2, 1, part.length).setValues([part]);
+
+  // 1列ずつ処理
+  for (let i = 0; i < part.length; i++) { // 実施回
+    rowCount = 0;
+    baseColumn = 2;
+    // 1行ずつ処理
+    for (let j = 0; j < section.length; j++) // 実施時間帯
+    {
+      statisticSheet.getRange(j + 2, i + 2, 1, 1).setFormulaR1C1('=\'' + part[i] + '\'!R' + (rowCount + 3) + 'C' + baseColumn);
+      rowCount++;
+      if (j + 1 === halfSectionCount) {
+        baseColumn += 4;
+        rowCount = 0;
+      }
+    }
   }
 }
