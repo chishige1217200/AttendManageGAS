@@ -36,7 +36,7 @@ function createStatisticSheet() { // 集計シートの自動作成
   if (configSheet === null) {
     configSheet = ss.insertSheet();
     configSheet.setName('Config');
-    setupConfig(configSheet);
+    setup();
     return;
   }
   let baseSheet = ss.getSheetByName('Base');
