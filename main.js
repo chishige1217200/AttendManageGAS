@@ -3,16 +3,16 @@ var max_width = 20; // Configシートの横項目読み取り最大数
 function setup() { // 初期設定
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let configSheet = ss.getSheetByName('Config');
-  if (configSheet == null) {
+  if (configSheet === null) {
     configSheet = ss.insertSheet();
     configSheet.setName('Config');
-    configSheet = ss.getSheetByName('Config');
+    //configSheet = ss.getSheetByName('Config');
   }
   let baseSheet = ss.getSheetByName('Base');
-  if (baseSheet == null) {
+  if (baseSheet === null) {
     baseSheet = ss.insertSheet();
     baseSheet.setName('Base');
-    baseSheet = ss.getSheetByName('Base');
+    //baseSheet = ss.getSheetByName('Base');
   }
 
   setupConfig(configSheet);
@@ -42,10 +42,10 @@ function backSum(num, flag) {
 function createBase() { // Baseシートの自動作成
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let configSheet = ss.getSheetByName('Config');
-  if (configSheet == null) {
+  if (configSheet === null) {
     configSheet = ss.insertSheet();
     configSheet.setName('Config');
-    configSheet = ss.getSheetByName('Config');
+    //configSheet = ss.getSheetByName('Config');
     setupConfig(configSheet);
     return;
   }
@@ -53,7 +53,7 @@ function createBase() { // Baseシートの自動作成
   if (baseSheet !== null) ss.deleteSheet(baseSheet);
   baseSheet = ss.insertSheet();
   baseSheet.setName('Base');
-  baseSheet = ss.getSheetByName('Base');
+  //baseSheet = ss.getSheetByName('Base');
 
   // Configの解析
   let rowNum = 3; // 解析行番
@@ -203,4 +203,17 @@ function createBase() { // Baseシートの自動作成
     baseSheet.getRange(3, baseColumn + i, 1, 1).setFormulaR1C1(allStatisticFormula);
   }
   baseSheet.getRange(3, baseColumn + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + ']:RC[-1])');
+
+  // シート複製
+  let completedsheet = [];
+  let finalSheet;
+  for (let i = 0; i < part.length; i++) {
+    finalSheet = ss.getSheetByName(part[i]);
+    if (finalSheet !== null) ss.deleteSheet(finalSheet);
+    finalSheet = baseSheet.copyTo(ss);
+    finalSheet.setName(part[i]);
+    //finalSheet = ss.getSheetByName('Base');
+    finalSheet.getRange(1, 1, 1, 1).setValue(part[i]);
+    completedsheet.push(finalSheet);
+  }
 }
