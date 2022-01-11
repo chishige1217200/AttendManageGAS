@@ -18,7 +18,7 @@ function setup() { // 初期設定
   configSheet.getRange(1, 2, 1, 1).setValue('シートを生成すると既存のシートは失われます．').setFontColor('red');
   configSheet.getRange(2, 3, 1, max_width).setValues(data1);
   configSheet.getRange(3, 2, data2.length, 1).setValues(data2);
-  configSheet.getRange(1, 6, 1, 1).setValue('Config，Base，出席率集計は予約語です．シート名及びConfigの入力値として使用できません').setFontColor('red');
+  configSheet.getRange(1, 6, 1, 1).setValue('Config，Base，出席率集計は予約語です．シート名及びConfigの入力値として使用できません．').setFontColor('red');
 
   console.log('Configを記入してください．');
 }
@@ -238,4 +238,9 @@ function createStatisticSheet() { // 集計シートの自動作成
       }
     }
   }
+
+  // グラフ描画
+  let graphRange = statisticSheet.getRange(2, 2, section.length, part.length);
+  let graph = statisticSheet.newChart().addRange(graphRange).setChartType(Charts.ChartType.LINE).setPosition(section.length + 3, 1, 0, 0);
+  statisticSheet.insertChart(graph.build());
 }
