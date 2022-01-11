@@ -83,6 +83,7 @@ function createBase() { // Baseシートの自動作成
   let unattends = data7[0].filter(word => word != ''); // 未処理とする要素
 
   // Baseの作成
+  baseSheet.getRange(1, 1, 1, 1).setValue('これは基準シートです．このシートが複製されます．');
   let statisticLines = []; //各実施時間帯の集計行をマーク
   let halfSectionCount = Math.ceil(section.length / 2); // 開始行の推定用（切り上げ）
   console.log(halfSectionCount);
