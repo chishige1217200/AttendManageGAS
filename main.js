@@ -2,7 +2,12 @@ var max_width = 20; // Configシートの横項目読み取り最大数
 
 function setup() { // 初期設定
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let scriptSheet = ss.getSheetByName('Script');
   let configSheet = ss.getSheetByName('Config');
+  if (scriptSheet === null) {
+    scriptSheet = ss.insertSheet();
+    scriptSheet.setName('Script');
+  }
   if (configSheet === null) {
     configSheet = ss.insertSheet();
     configSheet.setName('Config');
@@ -18,7 +23,11 @@ function setup() { // 初期設定
   configSheet.getRange(1, 2, 1, 1).setValue('シートを生成すると既存のシートは失われます．').setFontColor('red');
   configSheet.getRange(2, 3, 1, max_width).setValues(data1);
   configSheet.getRange(3, 2, data2.length, 1).setValues(data2);
-  configSheet.getRange(1, 6, 1, 1).setValue('Config，Base，出席率集計は予約語です．シート名及びConfigの入力値として使用できません．').setFontColor('red');
+  configSheet.getRange(1, 6, 1, 1).setValue('Config，Script，Base，出席率集計は予約語です．シート名及びConfigの入力値として使用できません．').setFontColor('red');
+
+  // Scriptシート作成
+  scriptSheet.getRange(2, 2, 1, 1).setValue('Coded by chishige1217200');
+  scriptSheet.getRange(3, 2, 1, 1).setValue('https://github.com/chishige1217200/AttendManageGAS');
 
   console.log('Configを記入してください．');
 }
