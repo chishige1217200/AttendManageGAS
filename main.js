@@ -89,6 +89,8 @@ function createStatisticSheet() { // 集計シートの自動作成
   let halfSectionCount = Math.ceil(section.length / 2); // 開始行の推定用（切り上げ）
   console.log(halfSectionCount);
 
+  baseSheet.setFrozenRows(halfSectionCount + 2); // 行の表示範囲を固定
+
   let totalStartRowNum = 4 + halfSectionCount; // 1番目の表の開始行
   let tableRowCount = 0; // 表の行数カウント
 
@@ -237,8 +239,7 @@ function createStatisticSheet() { // 集計シートの自動作成
     rowCount = 0;
     baseColumn = 2;
     // 1行ずつ処理
-    for (let j = 0; j < section.length; j++) // 実施時間帯
-    {
+    for (let j = 0; j < section.length; j++) { // 実施時間帯
       statisticSheet.getRange(j + 2, i + 2, 1, 1).setFormulaR1C1('=\'' + part[i] + '\'!R' + (rowCount + 3) + 'C' + baseColumn).setNumberFormat("0%");
       rowCount++;
       if (j + 1 === halfSectionCount) {
