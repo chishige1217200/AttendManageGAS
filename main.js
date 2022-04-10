@@ -242,7 +242,7 @@ function createStatisticSheet() { // 集計シートの自動作成
     }
     baseSheet.getRange(3, baseColumn + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + ']:RC[-1])');
 
-    console.log('Baseシートの複製完了．');
+    console.log('Baseシートの作成完了．');
     console.log('シートの複製中...');
 
     // シート複製
