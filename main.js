@@ -90,6 +90,11 @@ function createStatisticSheet() { // 集計シートの自動作成
     }
   }
 
+  if (place.length !== group.length) { // 実施場所を入力したにも関わらず，班数を入力していない場合の例外
+    console.error('実施場所と班数の組み合わせが1対1で対応していません．');
+    return;
+  }
+
   // 出席周りは例外処理がないため，入力に注意
   let statisticOption = data5[0].filter(word => word != ''); // 集計区分要素
   if (makeStatisticsSheets & statisticOption.length === 0) {
