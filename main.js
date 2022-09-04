@@ -2,6 +2,9 @@ var maxWidth = 20; // Configシートの横項目読み取り最大数
 var makeStatisticsSheets = true; // 出席率記入用シートを作成するか true/false
 var makeAggregateSheet = true; // 全体集計シート（グラフ）を作成するか true/false
 
+// 集計区分のプルダウンリスト項目設定
+var statisticClass = ['出席', '欠席', '未処理', '集計除外'];
+
 function setup() { // 初期設定
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let scriptSheet = ss.getSheetByName('Script');
@@ -29,9 +32,8 @@ function setup() { // 初期設定
   configSheet.getRange(1, 6, 1, 1).setValue('Config，Script，Base，出席率集計は予約語です．シート名及びConfigの入力値として使用できません．').setFontColor('red');
 
   // 集計区分のプルダウンリスト項目設定
-  let aggClass = ['出席', '欠席', '未処理', '集計除外'];
-  let aggRule = SpreadsheetApp.newDataValidation().requireValueInList(aggClass).build();
-  configSheet.getRange(8, 3, 1, maxWidth).setDataValidation(aggRule);
+  let statisticRule = SpreadsheetApp.newDataValidation().requireValueInList(statisticClass).build();
+  configSheet.getRange(8, 3, 1, maxWidth).setDataValidation(statisticRule);
 
   // Scriptシート作成
   scriptSheet.getRange(2, 2, 1, 1).setValue('Coded by chishige1217200');
@@ -106,8 +108,8 @@ function createStatisticSheet() { // 集計シートの自動作成
     return;
   }
 
-  let attends = data6[0].filter(word => word != ''); // 集計区分要素
-  if (makeStatisticsSheets & attends.length === 0) {
+  let statisticRule = data6[0].filter(word => word != ''); // 集計区分要素
+  if (makeStatisticsSheets & statisticRule.length === 0) {
     console.error('集計区分に1つ以上の集計区分を指定してください．');
     return;
   }
@@ -131,7 +133,7 @@ function createStatisticSheet() { // 集計シートの自動作成
     if (sheetExist > 0) {
       console.log('作成済みのシートを検出しました．処理を実行するには，\"スプレッドシート\"のメッセージウィンドウから許可する必要があります．');
       let wantcontinue = Browser.msgBox('作成済みのシートが存在します．実行すると作成済みのシートが上書きされます．それでも実行しますか？', Browser.Buttons.YES_NO);
-      
+
       if (wantcontinue === null) console.log('メッセージウィンドウが表示されない場合は，Google Chromeを使用してみてください．');
       if (wantcontinue === 'no' || wantcontinue === null) return;
     }
@@ -153,11 +155,42 @@ function createStatisticSheet() { // 集計シートの自動作成
     for (let l = 0; l < statisticOption.length; l++)
       firstLineArray.push(statisticOption[l]);
     firstLineArray.push('総数');
-    firstLineArray.push('出席率');
+    firstLineArray.push('総出席率');
+    firstLineArray.push('純出席率');
     firstLineArray.push('未処理　計');
     firstLineArray = [firstLineArray];
     baseSheet.getRange(totalStartRowNum, 2, 1, firstLineArray[0].length).setValues(firstLineArray).setHorizontalAlignment('center');
+    linkLines.push(totalStartRowNum + tableRowCount);
     tableRowCount++;
+
+    // ここに出席者，欠席者，未処理者，除外者の場所を取得
+    let attendsIndex = [];
+    let absentsIndex = [];
+    let unattendsIndex = [];
+    let ignoreIndex = [];
+
+    for (let j = 0; j < statisticRule.length; j++)
+      if (statisticRule[j] === statisticClass[0])
+        attendsIndex.push(j + 1);
+
+    for (let j = 0; j < statisticRule.length; j++)
+      if (statisticRule[j] === statisticClass[1])
+        absentsIndex.push(j + 1);
+
+    for (let j = 0; j < statisticRule.length; j++)
+      if (statisticRule[j] === statisticClass[2])
+        unattendsIndex.push(j + 1);
+
+    for (let j = 0; j < statisticRule.length; j++)
+      if (statisticRule[j] === statisticClass[3])
+        ignoreIndex.push(j + 1);
+
+    console.log(statisticRule);
+
+    console.log(attendsIndex);
+    console.log(absentsIndex);
+    console.log(unattendsIndex);
+    console.log(ignoreIndex);
 
     for (let j = 0; j < place.length; j++) { // 実施場所毎のループ（1つの表）
       baseSheet.getRange(totalStartRowNum + tableRowCount, 3, groupCount[j], statisticOption.length).setBackground('aqua'); // 色をつける
@@ -185,27 +218,6 @@ function createStatisticSheet() { // 集計シートの自動作成
     baseSheet.getRange(totalStartRowNum + tableRowCount, 3, 1, statisticOption.length).setFormulaR1C1(placeStatisticFormula); // 要素ごとの最終合計
     baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + ']:RC[-1])');
 
-    // ここに出席率と未処理 計を計算
-    let attendsIndex = [];
-    let unattendsIndex = [];
-
-    for (let j = 0; j < attends.length; j++) {
-      let index = statisticOption.findIndex(element => element === attends[j]);
-      if (index === -1) {
-        console.error('出席要素が見つかりません．統計区別と同じ要素が出席要素に記入されているか確認してください．');
-        return;
-      }
-      else attendsIndex.push(index + 1);
-    }
-    for (let j = 0; j < unattends.length; j++) {
-      let index = statisticOption.findIndex(element => element === unattends[j]);
-      if (index === -1) {
-        console.error('未処理要素が見つかりません．統計区別と同じ要素が未処理要素に記入されているか確認してください．');
-        return;
-      }
-      else unattendsIndex.push(index + 1);
-    }
-
     let attendsFormula = '=(';
     for (let j = 0; j < attendsIndex.length; j++) {
       attendsFormula += 'RC[' + (-2 - statisticOption.length + attendsIndex[j]) + ']';
@@ -219,18 +231,19 @@ function createStatisticSheet() { // 集計シートの自動作成
       unattendsFormula += 'RC[' + (-3 - statisticOption.length + unattendsIndex[j]) + ']';
       if (j + 1 !== unattendsIndex.length) unattendsFormula += '+';
     }
-    baseSheet.getRange(totalStartRowNum + tableRowCount, statisticOption.length + 5, 1, 1).setFormulaR1C1(unattendsFormula);
+    baseSheet.getRange(totalStartRowNum + tableRowCount, statisticOption.length + 6, 1, 1).setFormulaR1C1(unattendsFormula);
 
     statisticLines.push(tableRowCount + totalStartRowNum);
     tableRowCount++;
 
     baseSheet.getRange(totalStartRowNum, 2, tableRowCount, statisticOption.length + 2).setBorder(true, true, true, true, true, true); // 枠線を引く
 
-    // 表の複製処理
+    // 表の複製処理（1つだけ作成したテンプレートをコピーする）
     for (let i = 1; i < section.length; i++) {
       baseSheet.getRange(totalStartRowNum, 2, tableRowCount, statisticOption.length + 5).copyTo(baseSheet.getRange(totalStartRowNum + (tableRowCount + 2) * i, 2, tableRowCount, statisticOption.length + 5));
       baseSheet.getRange(totalStartRowNum + (tableRowCount + 2) * i, 2, 1, 1).setValue(section[i]);
-      statisticLines.push(totalStartRowNum + (tableRowCount + 2) * i + tableRowCount - 1);
+      linkLines.push(totalStartRowNum + (tableRowCount + 2) * i); // ジャンプリンクを貼る行番号を保存
+      statisticLines.push(totalStartRowNum + (tableRowCount + 2) * i + tableRowCount - 1); // 集計値のリンクを貼る行番号を保存
     }
     //console.log(tableRowCount);
     //console.log(statisticLines);
@@ -238,17 +251,20 @@ function createStatisticSheet() { // 集計シートの自動作成
     // 上部の集計部を生成
     let baseColumn = 1;
     let rowCount = 0;
-    baseSheet.getRange(2, baseColumn + 1, 1, 2).setValues([['出席率', '未処理']]);
+    baseSheet.getRange(2, baseColumn + 1, 1, 3).setValues([['総出席率', '純出席率', '未処理']]);
     for (let i = 0; i < section.length; i++) {
       baseSheet.getRange(rowCount + 3, baseColumn, 1, 1).setValue(section[i]);
+      // TODO:ここでリンクをセットしたい
+      console.log(linkLines);
       baseSheet.getRange(rowCount + 3, baseColumn + 1, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 4)).setNumberFormat("0%");
-      baseSheet.getRange(rowCount + 3, baseColumn + 2, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 5));
+      baseSheet.getRange(rowCount + 3, baseColumn + 2, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 5)).setNumberFormat("0%");
+      baseSheet.getRange(rowCount + 3, baseColumn + 3, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 6));
       // 代入処理
       rowCount++;
       if (i + 1 === halfSectionCount) {
         baseColumn += 4;
         rowCount = 0;
-        baseSheet.getRange(2, baseColumn + 1, 1, 2).setValues([['出席率', '未処理']]);
+        baseSheet.getRange(2, baseColumn + 1, 1, 3).setValues([['総出席率', '純出席率', '未処理']]);
       }
     }
 
