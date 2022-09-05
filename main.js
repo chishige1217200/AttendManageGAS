@@ -246,10 +246,10 @@ function createStatisticSheet() { // 集計シートの自動作成
     let rowCount = 0;
     baseSheet.getRange(2, baseColumn + 1, 1, 3).setValues([['総出席率', '純出席率', '未処理']]);
 
-    const gid = baseSheet.getSheetId();
+    let basegid = baseSheet.getSheetId();
 
     for (let i = 0; i < section.length; i++) {
-      baseSheet.getRange(rowCount + 3, baseColumn, 1, 1).setFormula('=HYPERLINK(\"#gid=' + gid + '&range=B' + linkLines[i] + '\", \"' + section[i] + '\")');
+      baseSheet.getRange(rowCount + 3, baseColumn, 1, 1).setFormula('=HYPERLINK(\"#gid=' + basegid + '&range=B' + linkLines[i] + '\", \"' + section[i] + '\")'); // リンク作成
       baseSheet.getRange(rowCount + 3, baseColumn + 1, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 4)).setNumberFormat("0%");
       baseSheet.getRange(rowCount + 3, baseColumn + 2, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 5)).setNumberFormat("0%");
       baseSheet.getRange(rowCount + 3, baseColumn + 3, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 6));
@@ -289,6 +289,19 @@ function createStatisticSheet() { // 集計シートの自動作成
       finalSheet = baseSheet.copyTo(ss);
       finalSheet.setName(part[i]);
       finalSheet.getRange(1, 1, 1, 1).setValue(part[i]);
+
+      let baseColumn = 1;
+      let rowCount = 0;
+      let finalgid = finalSheet.getSheetId();
+      for (let i = 0; i < section.length; i++) {
+        finalSheet.getRange(rowCount + 3, baseColumn, 1, 1).setFormula('=HYPERLINK(\"#gid=' + finalgid + '&range=B' + linkLines[i] + '\", \"' + section[i] + '\")'); // リンク作成
+        rowCount++;
+        if (i + 1 === halfSectionCount) {
+          baseColumn += 4;
+          rowCount = 0;
+        }
+      }
+
       completedsheet.push(finalSheet);
     }
     console.log('シートの複製完了．');
