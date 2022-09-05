@@ -281,7 +281,7 @@ function createStatisticSheet() { // 集計シートの自動作成
       }
     }
 
-    baseColumn += 4;
+    baseColumn += 5;
     baseSheet.getRange(1, baseColumn, 1, 1).setValue('計');
     baseSheet.getRange(2, baseColumn, 1, statisticOption.length).setValues([statisticOption]).setHorizontalAlignment('center');
     baseSheet.getRange(2, baseColumn + statisticOption.length, 1, 1).setValue('総数').setHorizontalAlignment('center');
