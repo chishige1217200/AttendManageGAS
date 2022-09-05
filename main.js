@@ -199,10 +199,10 @@ function createStatisticSheet() { // 集計シートの自動作成
       ignoreFormula += 'RC[' + (-3 - statisticOption.length + attendsIndex[j]) + ']';
       if (j + 1 !== attendsIndex.length) ignoreFormula += '+';
     }
-    ignoreFormula += ')/(RC[-2]-';
+    ignoreFormula += ')/(RC[-2]';
     for (let j = 0; j < ignoreIndex.length; j++) {
+      ignoreFormula += '-';
       ignoreFormula += 'RC[' + (-3 - statisticOption.length + ignoreIndex[j]) + ']';
-      if (j + 1 !== ignoreIndex.length) ignoreFormula += '-';
     }
     ignoreFormula += ')';
 
