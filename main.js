@@ -211,6 +211,7 @@ function createStatisticSheet() { // 集計シートの自動作成
     baseSheet.getRange(totalStartRowNum + tableRowCount, 3, 1, statisticOption.length).setFormulaR1C1(placeStatisticFormula); // 要素ごとの最終合計
     baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + ']:RC[-1])');
 
+    // 総出席率計算
     let attendsFormula = '=(';
     for (let j = 0; j < attendsIndex.length; j++) {
       attendsFormula += 'RC[' + (-2 - statisticOption.length + attendsIndex[j]) + ']';
@@ -219,9 +220,24 @@ function createStatisticSheet() { // 集計シートの自動作成
     attendsFormula += ')/RC[-1]';
     baseSheet.getRange(totalStartRowNum + tableRowCount, statisticOption.length + 4, 1, 1).setFormulaR1C1(attendsFormula).setNumberFormat("0%");
 
+    // 純出席率計算
+    let ignoreFormula = '=(';
+    for (let j = 0; j < attendsIndex.length; j++) {
+      ignoreFormula += 'RC[' + (-3 - statisticOption.length + attendsIndex[j]) + ']';
+      if (j + 1 !== attendsIndex.length) ignoreFormula += '+';
+    }
+    ignoreFormula += ')/(RC[-2]-';
+    for (let j = 0; j < ignoreIndex.length; j++) {
+      ignoreFormula += 'RC[' + (-3 - statisticOption.length + ignoreIndex[j]) + ']';
+      if (j + 1 !== ignoreIndex.length) ignoreFormula += '-';
+    }
+    ignoreFormula += ')';
+    baseSheet.getRange(totalStartRowNum + tableRowCount, statisticOption.length + 5, 1, 1).setFormulaR1C1(ignoreFormula).setNumberFormat("0%");
+
+    // 未処理者 計 計算
     let unattendsFormula = '=';
     for (let j = 0; j < unattendsIndex.length; j++) {
-      unattendsFormula += 'RC[' + (-3 - statisticOption.length + unattendsIndex[j]) + ']';
+      unattendsFormula += 'RC[' + (-4 - statisticOption.length + unattendsIndex[j]) + ']';
       if (j + 1 !== unattendsIndex.length) unattendsFormula += '+';
     }
     baseSheet.getRange(totalStartRowNum + tableRowCount, statisticOption.length + 6, 1, 1).setFormulaR1C1(unattendsFormula);
