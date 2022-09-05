@@ -185,13 +185,6 @@ function createStatisticSheet() { // 集計シートの自動作成
       if (statisticRule[j] === statisticClass[3])
         ignoreIndex.push(j + 1);
 
-    console.log(statisticRule);
-
-    console.log(attendsIndex);
-    console.log(absentsIndex);
-    console.log(unattendsIndex);
-    console.log(ignoreIndex);
-
     for (let j = 0; j < place.length; j++) { // 実施場所毎のループ（1つの表）
       baseSheet.getRange(totalStartRowNum + tableRowCount, 3, groupCount[j], statisticOption.length).setBackground('aqua'); // 色をつける
       for (let k = 0; k < groupCount[j]; k++) { // 実施場所入力行生成部
@@ -252,10 +245,11 @@ function createStatisticSheet() { // 集計シートの自動作成
     let baseColumn = 1;
     let rowCount = 0;
     baseSheet.getRange(2, baseColumn + 1, 1, 3).setValues([['総出席率', '純出席率', '未処理']]);
+
+    const gid = baseSheet.getSheetId();
+
     for (let i = 0; i < section.length; i++) {
-      baseSheet.getRange(rowCount + 3, baseColumn, 1, 1).setValue(section[i]);
-      // TODO:ここでリンクをセットしたい
-      console.log(linkLines);
+      baseSheet.getRange(rowCount + 3, baseColumn, 1, 1).setFormula('=HYPERLINK(\"#gid=' + gid + '&range=B' + linkLines[i] + '\", \"' + section[i] + '\")');
       baseSheet.getRange(rowCount + 3, baseColumn + 1, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 4)).setNumberFormat("0%");
       baseSheet.getRange(rowCount + 3, baseColumn + 2, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 5)).setNumberFormat("0%");
       baseSheet.getRange(rowCount + 3, baseColumn + 3, 1, 1).setFormulaR1C1('=R' + statisticLines[i] + 'C' + (statisticOption.length + 6));
