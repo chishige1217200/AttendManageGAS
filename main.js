@@ -98,7 +98,7 @@ function createStatisticSheet() { // 集計シートの自動作成
   }
 
   if (place.length !== group.length) { // 実施場所を入力したにも関わらず，班数を入力していない場合の例外
-    console.error('実施場所と班数の組み合わせが1対1で対応していません．');
+    console.error('実施場所と班数の個数が一致しません．個数を合わせて実行してください．');
     return;
   }
 
@@ -111,6 +111,11 @@ function createStatisticSheet() { // 集計シートの自動作成
   let statisticRule = data6[0].filter(word => word != ''); // 集計区分要素
   if (makeStatisticsSheets & statisticRule.length === 0) {
     console.error('集計区分に1つ以上の集計区分を指定してください．');
+    return;
+  }
+
+  if (makeStatisticsSheets & statisticOption.length != statisticRule.length) {
+    console.error('集計分類と集計区分の個数が一致しません．個数を合わせて実行してください．');
     return;
   }
 
