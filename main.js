@@ -1,6 +1,6 @@
 var maxWidth = 20; // Configシートの横項目読み取り最大数
 var makeStatisticsSheets = true; // 出席率記入用シートを作成するか true/false
-var makeAggregateSheet = true; // 全体集計シート（グラフ）を作成するか true/false
+var makeAggregateSheet = false; // 全体集計シート（グラフ）を作成するか true/false
 
 // 集計区分のプルダウンリスト項目設定
 var statisticClass = ['出席', '欠席', '未処理', '集計除外'];
@@ -140,7 +140,7 @@ function createStatisticSheet() { // 集計シートの自動作成
       let wantcontinue = Browser.msgBox('作成済みのシートが存在します．実行すると作成済みのシートが上書きされます．それでも実行しますか？', Browser.Buttons.YES_NO);
 
       if (wantcontinue === null) console.log('メッセージウィンドウが表示されない場合は，Google Chromeを使用してみてください．');
-      if (wantcontinue === 'no' || wantcontinue === null) return;
+      if (wantcontinue === 'no' || wantcontinue === 'cancel' ||wantcontinue === null) return;
     }
 
     let baseSheet = ss.getSheetByName('Base');
