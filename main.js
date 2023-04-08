@@ -24,7 +24,7 @@ function setup() { // 初期設定
   for (let i = 0; i < maxWidth; i++)
     in_data1.push(i + 1);
   data1.push(in_data1); // 与えるデータは二次元配列
-  const data2 = [['実施回'], ['時間帯'], ['場所'], ['班数'], ['集計分類'], ['集計区分']];
+  const data2 = [['実施回'], ['時間帯'], ['場所'], ['集計分類'], ['集計区分']];
   configSheet.getRange(1, 2, 1, 1).setValue('シートを生成すると既存のシートは失われます．').setFontColor('red');
   configSheet.getRange(2, 3, 1, maxWidth).setValues(data1);
   configSheet.getRange(3, 2, data2.length, 1).setValues(data2);
@@ -33,7 +33,7 @@ function setup() { // 初期設定
 
   // 集計区分のプルダウンリスト項目設定
   let statisticRule = SpreadsheetApp.newDataValidation().requireValueInList(statisticClass).build();
-  configSheet.getRange(8, 3, 1, maxWidth).setDataValidation(statisticRule);
+  configSheet.getRange(7, 3, 1, maxWidth).setDataValidation(statisticRule);
 
   // Scriptシート作成
   scriptSheet.getRange(2, 2, 1, 1).setValue('Coded by chishige1217200');
@@ -43,13 +43,6 @@ function setup() { // 初期設定
 }
 
 function createStatisticSheet() { // 集計シートの自動作成
-  function backSum(num, flag) { // 全体合計処理に使用
-    let sum = 0;
-    for (let i = num.length - 1; i >= flag; i--)
-      sum += num[i];
-    return sum;
-  }
-
   // Configシートの情報を取得
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let configSheet = ss.getSheetByName('Config');
@@ -67,7 +60,6 @@ function createStatisticSheet() { // 集計シートの自動作成
   let data3 = configSheet.getRange(rowNum++, 3, 1, maxWidth).getValues();
   let data4 = configSheet.getRange(rowNum++, 3, 1, maxWidth).getValues();
   let data5 = configSheet.getRange(rowNum++, 3, 1, maxWidth).getValues();
-  let data6 = configSheet.getRange(rowNum++, 3, 1, maxWidth).getValues();
 
   let part = data1[0].filter(word => word != ''); // 実施回（ex: 1st）
   if (part.length <= 0) {
@@ -87,28 +79,13 @@ function createStatisticSheet() { // 集計シートの自動作成
     return;
   }
 
-  let group = data4[0].filter(word => word != ''); // 班数（ex: 3）
-  let groupCount = []; // 教室ごとの班数をカウント
-  for (let i = 0; i < group.length; i++) {
-    groupCount.push(parseInt(group[i], 10)); // 10進数でパース
-    if (makeStatisticsSheets & groupCount[i] <= 0) {
-      console.error('班数には自然数を指定してください．');
-      return;
-    }
-  }
-
-  if (place.length !== group.length) { // 実施場所を入力したにも関わらず，班数を入力していない場合の例外
-    console.error('実施場所と班数の個数が一致しません．個数を合わせて実行してください．');
-    return;
-  }
-
-  let statisticOption = data5[0].filter(word => word != ''); // 集計分類要素
+  let statisticOption = data4[0].filter(word => word != ''); // 集計分類要素
   if (makeStatisticsSheets & statisticOption.length === 0) {
     console.error('集計分類に1つ以上の分類要素を指定してください．');
     return;
   }
 
-  let statisticRule = data6[0].filter(word => word != ''); // 集計区分要素
+  let statisticRule = data5[0].filter(word => word != ''); // 集計区分要素
   if (makeStatisticsSheets & statisticRule.length === 0) {
     console.error('集計区分に1つ以上の集計区分を指定してください．');
     return;
@@ -229,14 +206,8 @@ function createStatisticSheet() { // 集計シートの自動作成
     }
 
     for (let j = 0; j < place.length; j++) { // 実施場所毎のループ（1つの表）
-      baseSheet.getRange(totalStartRowNum + tableRowCount, 3, groupCount[j], statisticOption.length).setBackground('aqua'); // 色をつける
-      for (let k = 0; k < groupCount[j]; k++) { // 実施場所入力行生成部
-        baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue(place[j] + (k + 1) + '班').setHorizontalAlignment('center');
-        baseSheet.getRange(totalStartRowNum + tableRowCount, 3 + statisticOption.length, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + ']:RC[-1])');
-        tableRowCount++;
-      }
-      baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue(place[j] + '合計').setHorizontalAlignment('center'); // 実施場所毎合計部
-      baseSheet.getRange(totalStartRowNum + tableRowCount, 3, 1, statisticOption.length).setFormulaR1C1('=SUM(R[' + (-groupCount[j]) + ']C:R[-1]C)');
+      baseSheet.getRange(totalStartRowNum + tableRowCount, 3, 1, statisticOption.length).setBackground('aqua'); // 色をつける
+      baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue(place[j]).setHorizontalAlignment('center'); // 実施場所毎合計部
       baseSheet.getRange(totalStartRowNum + tableRowCount, statisticOption.length + 3, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + ']:RC[-1])'); // 時間帯の1場所の合計
       baseSheet.getRange(totalStartRowNum + tableRowCount, statisticOption.length + 4, 1, 1).setFormulaR1C1(attendsFormula).setNumberFormat("0%"); // 時間帯の1場所の総出席率
       baseSheet.getRange(totalStartRowNum + tableRowCount, statisticOption.length + 5, 1, 1).setFormulaR1C1(ignoreFormula).setNumberFormat("0%"); // 時間帯の1場所の純出席率
@@ -246,14 +217,7 @@ function createStatisticSheet() { // 集計シートの自動作成
 
     // 合計計算（相対仕様に変更）
     baseSheet.getRange(totalStartRowNum + tableRowCount, 2, 1, 1).setValue('合計').setFontColor('red').setHorizontalAlignment('center');
-    for (let j = place.length - 1; j >= 0; j--) {
-      let back = 0;
-      if (j === place.length - 1) back = -1;
-      else
-        back = -backSum(groupCount, j + 1) - (place.length - j);
-      placeStatisticFormula += 'R[' + back + ']C';
-      if (j !== 0) placeStatisticFormula += '+';
-    }
+    placeStatisticFormula += 'SUM(R[' + (-place.length) + ']C:R[-1]C)'
     baseSheet.getRange(totalStartRowNum + tableRowCount, 3, 1, statisticOption.length).setFormulaR1C1(placeStatisticFormula); // 要素ごとの最終合計
     baseSheet.getRange(totalStartRowNum + tableRowCount, statisticOption.length + 3, 1, 1).setFormulaR1C1('=SUM(RC[' + (-statisticOption.length) + ']:RC[-1])'); // 時間帯の合計
     baseSheet.getRange(totalStartRowNum + tableRowCount, statisticOption.length + 4, 1, 1).setFormulaR1C1(attendsFormula).setNumberFormat("0%"); // 時間帯の総出席率
